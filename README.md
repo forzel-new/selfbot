@@ -6,7 +6,7 @@
 
 Запускаем, устанавливаем. ВНИМАНИЕ! ПРИ УСТАНОВКЕ ОБЯЗАТЕЛЬНО СТАВЬТЕ ГАЛОЧКУ "Add Python to PATCH"!!! 
 
-После установки открываем командную строку (win+r -> cmd) и пишем эти команды: pip install discord , pip install colorama , pip install asyncio 
+После установки открываем командную строку (win+r -> cmd) и пишем эти команды: pip install discord , pip install colorama , pip install asyncio , pip install requests
 
 Открываем файл token.txt и вводим в него токен вашего аккаунта.
 
