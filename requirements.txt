@@ -1,0 +1,4 @@
+discord==1.7.3
+colorama==0.4.4
+asyncio==3.4.3
+requests==2.26.0
