@@ -1,4 +1,4 @@
 echo off
-cls
+cls $
 python selfb.py
 pause
